@@ -1,0 +1,92 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+  relationMode = "prisma"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String     @id @default(uuid())
+  username     String     @unique
+  password     String
+  name         String?
+  email        String?
+  phoneNumber  String?
+  photoUrl     String?
+  role         String?    @default("guest")
+
+  // Relations
+  bookings     Booking[]  // A user can have multiple bookings
+  reviews      Review[]   // A user can post multiple reviews
+}
+
+model Host {
+  id           String      @id @default(uuid())
+  username     String      @unique
+  password     String
+  name         String?
+  email        String?
+  phoneNumber  String?
+  photoUrl     String?
+  bio          String?
+  role         String?     @default("host")
+
+  // Relations
+  listings     Property[]  // One host can have multiple properties
+}
+
+model Property {
+  id              String      @id @default(uuid())
+  hostId          String
+  title           String
+  description     String
+  location        String
+  pricePerNight   Float
+  bedroomsCount   Int
+  bathroomsCount  Int
+  maxGuests       Int
+  rating          Int?
+
+  // Relations
+  host       Host       @relation(fields: [hostId], references: [id])
+  bookings   Booking[]  // A property can have multiple bookings
+  reviews    Review[]   // A property can have multiple reviews
+
+  @@index([hostId])
+}
+
+model Booking {
+  id              String     @id @default(uuid())
+  userId          String
+  propertyId      String
+  checkInDate     DateTime
+  checkOutDate    DateTime
+  numberOfGuests  Int
+  totalPrice      Float
+  bookingStatus   String
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id])
+  property  Property  @relation(fields: [propertyId], references: [id])
+
+  @@index([userId])
+  @@index([propertyId])
+}
+
+model Review {
+  id          String     @id @default(uuid())
+  userId      String
+  propertyId  String
+  rating      Int
+  comment     String?
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id])
+  property  Property  @relation(fields: [propertyId], references: [id])
+
+  @@index([userId])
+  @@index([propertyId])
+}
