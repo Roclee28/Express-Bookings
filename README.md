@@ -19,8 +19,8 @@ To start the app, follow these steps:
 2. Replace the values for `AUTH_SECRET_KEY` and `SENTRY_DSN` with your own values.
 
 ```plaintext
-AUTH_SECRET_KEY=your_secret_key_here
-SENTRY_DSN=your_sentry_dsn_here
+AUTH_SECRET_KEY="supersecretkey123"
+SENTRY_DSN=https://6d9756311349d3530309732ab82ec77e@o4510006640246784.ingest.de.sentry.io/4510188348702800
 ```
 
 ## Running tests

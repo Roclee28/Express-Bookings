@@ -1,92 +1,98 @@
-datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
-  relationMode = "prisma"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id           String     @id @default(uuid())
-  username     String     @unique
-  password     String
-  name         String?
-  email        String?
-  phoneNumber  String?
-  photoUrl     String?
-  role         String?    @default("guest")
+datasource db {
+  provider     = "sqlite"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
 
-  // Relations
-  bookings     Booking[]  // A user can have multiple bookings
-  reviews      Review[]   // A user can post multiple reviews
+model User {
+  id          String    @id @default(uuid())
+  username    String    @unique
+  password    String
+  name        String?
+  email       String?
+  phoneNumber String?
+  pictureUrl  String?
+  role        String?   @default("guest")
+  bookings    Booking[]
+  reviews     Review[]
 }
 
 model Host {
-  id           String      @id @default(uuid())
-  username     String      @unique
-  password     String
-  name         String?
-  email        String?
-  phoneNumber  String?
-  photoUrl     String?
-  bio          String?
-  role         String?     @default("host")
-
-  // Relations
-  listings     Property[]  // One host can have multiple properties
+  id          String     @id @default(uuid())
+  username    String     @unique
+  password    String
+  name        String?
+  email       String?
+  phoneNumber String?
+  pictureUrl  String?
+  aboutMe     String?
+  role        String?    @default("host")
+  listings    Property[]
 }
 
 model Property {
-  id              String      @id @default(uuid())
-  hostId          String
-  title           String
-  description     String
-  location        String
-  pricePerNight   Float
-  bedroomsCount   Int
-  bathroomsCount  Int
-  maxGuests       Int
-  rating          Int?
-
-  // Relations
-  host       Host       @relation(fields: [hostId], references: [id])
-  bookings   Booking[]  // A property can have multiple bookings
-  reviews    Review[]   // A property can have multiple reviews
+  id            String    @id @default(uuid())
+  title         String
+  description   String
+  location      String
+  pricePerNight Float
+  bedroomCount  Int
+  bathRoomCount Int
+  maxGuestCount Int
+  hostId        String
+  rating        Int?
+  host          Host      @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  bookings      Booking[]
+  reviews       Review[]
+  amenities     Amenity[] @relation("PropertyAmenities")
 
   @@index([hostId])
 }
 
 model Booking {
-  id              String     @id @default(uuid())
-  userId          String
-  propertyId      String
-  checkInDate     DateTime
-  checkOutDate    DateTime
-  numberOfGuests  Int
-  totalPrice      Float
-  bookingStatus   String
-
-  // Relations
-  user      User      @relation(fields: [userId], references: [id])
-  property  Property  @relation(fields: [propertyId], references: [id])
+  id             String   @id @default(uuid())
+  userId         String
+  propertyId     String
+  checkinDate    DateTime
+  checkoutDate   DateTime
+  numberOfGuests Int
+  totalPrice     Float
+  bookingStatus  String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([propertyId])
 }
 
 model Review {
-  id          String     @id @default(uuid())
-  userId      String
-  propertyId  String
-  rating      Int
-  comment     String?
-
-  // Relations
-  user      User      @relation(fields: [userId], references: [id])
-  property  Property  @relation(fields: [propertyId], references: [id])
+  id         String   @id @default(uuid())
+  userId     String
+  propertyId String
+  rating     Int
+  comment    String?
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([propertyId])
+}
+
+model Amenity {
+  id         String     @id @default(uuid())
+  name       String
+  properties Property[] @relation("PropertyAmenities")
+}
+
+model PropertyAmenities {
+  A String
+  B String
+
+  @@unique([A, B], map: "_PropertyAmenities_AB_unique")
+  @@index([B], map: "_PropertyAmenities_B_index")
+  @@map("_PropertyAmenities")
 }
