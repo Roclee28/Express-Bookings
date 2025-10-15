@@ -1,2 +1,17 @@
-node_modules
-.vscode
+# Node dependencies
+node_modules/
+
+# VS Code settings
+.vscode/
+
+# Environment variables
+.env
+
+# Prisma database
+prisma/dev.db
+
+# Logs
+*.log
+
+# macOS system files
+.DS_Store
