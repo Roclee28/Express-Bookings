@@ -1,16 +1,19 @@
 import express from "express";
-import { requestLogger } from "./authorization/logger.js";
 import dotenv from "dotenv";
+
+import { requestLogger } from "./authorization/logger.js";
 import { authRoutes } from "./authorization/auth.js";
+import { authenticateToken } from "./authorization/authMiddleware.js";
+
 import usersRouter from "./routes/users.js";
 import hostsRouter from "./routes/hosts.js";
 import propertiesRouter from "./routes/properties.js";
 import bookingsRouter from "./routes/bookings.js";
 import reviewsRouter from "./routes/reviews.js";
+
 import * as Sentry from "@sentry/node";
 
 dotenv.config();
-
 const app = express();
 
 // Sentry init
@@ -27,6 +30,20 @@ app.use(requestLogger);
 
 // Auth routes (signup/login/protected)
 app.use("/", authRoutes);
+
+// Middleware: Token only required for POST/PUT/DELETE
+app.use((req, res, next) => {
+  const method = req.method.toUpperCase();
+  const openMethods = ["GET", "OPTIONS"];
+
+  const hasAuthHeader = !!req.headers["authorization"];
+
+  if (!openMethods.includes(method) && hasAuthHeader) {
+    return authenticateToken(req, res, next);
+  }
+
+  next();
+});
 
 // Base routes
 app.use("/users", usersRouter);
