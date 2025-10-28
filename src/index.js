@@ -31,18 +31,15 @@ app.use(requestLogger);
 // Auth routes (signup/login/protected)
 app.use("/", authRoutes);
 
-// Middleware: Token only required for POST/PUT/DELETE
+// Middleware: Token required for POST/PUT/DELETE
 app.use((req, res, next) => {
   const method = req.method.toUpperCase();
-  const openMethods = ["GET", "OPTIONS"];
 
-  const hasAuthHeader = !!req.headers["authorization"];
-
-  if (!openMethods.includes(method) && hasAuthHeader) {
+  if (["POST", "PUT", "DELETE"].includes(method)) {
     return authenticateToken(req, res, next);
   }
 
-  next();
+  return next();
 });
 
 // Base routes

@@ -7,9 +7,8 @@ export function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
-  // If there is no token → continue (needed for tests)
   if (!token) {
-    return next();
+    return res.status(401).json({ message: "Token required" });
   }
 
   jwt.verify(token, process.env.AUTH_SECRET_KEY, (err, user) => {

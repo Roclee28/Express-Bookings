@@ -66,6 +66,11 @@ export function createCRUDController(modelName) {
           select: safeSelect[modelName] || undefined,
         });
 
+        // With no results
+        if (items.length === 0) {
+          return res.status(404).json({ error: "No results found" });
+        }
+
         res.json(items);
       } catch (error) {
         res.status(400).json({ error: error.message });
@@ -87,17 +92,24 @@ export function createCRUDController(modelName) {
     create: async (req, res) => {
       try {
         if (modelName === "user" || modelName === "host") {
-          const { email, username } = req.body;
+          const { username } = req.body;
 
-          const existing = await model.findFirst({
-            where: {
-              OR: [{ email }, { username }],
-            },
+          // Username is required for these models
+          if (!username) {
+            return res
+              .status(400)
+              .json({ error: "Username is required for this model." });
+          }
+
+          // Only check username (email can be duplicated)
+          const existing = await model.findUnique({
+            where: { username },
           });
 
           if (existing) {
-            return res.status(201).json(existing); // only for passed test
-            // return res.status(409).json({ error: "User already exists" });
+            return res.status(409).json({
+              error: `${modelName} with this username already exists.`,
+            });
           }
         }
 
